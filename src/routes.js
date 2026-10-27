@@ -31,8 +31,14 @@ function sendHtml(res, html) {
   res.end(html);
 }
 
-function getCookieFromReq(req) {
-  return req.headers['x-yt-cookie'] || req.headers['cookie'] || '';
+function getCookieFromReq(req, parsedUrl) {
+  return (
+    req.headers['x-yt-cookie'] ||
+    req.headers['cookie'] ||
+    (parsedUrl && parsedUrl.searchParams.get('cookie')) ||
+    process.env.YT_COOKIE ||
+    ''
+  );
 }
 
 export async function handleRequest(req, res) {
@@ -55,7 +61,7 @@ export async function handleRequest(req, res) {
   if (!rawPath.startsWith('/')) rawPath = '/' + rawPath;
   parsedUrl.searchParams.delete('__path');
   const pathname = rawPath;
-  const cookie = getCookieFromReq(req);
+  const cookie = getCookieFromReq(req, parsedUrl);
 
   try {
     // 1. Health check

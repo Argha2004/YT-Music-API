@@ -121,11 +121,15 @@ export async function resolveAudioFormat(videoId, forceFresh = false, cookie = '
     }
   }
 
-  const err = new Error(
-    `No valid audio stream was found for track ${videoId}. Diagnostics: [${diagnostics.join('; ')}]`
-  );
-  err.statusCode = 404;
+  const isBotBlocked = diagnostics.some((d) => d.includes('LOGIN_REQUIRED') || d.includes('bot'));
+  const helpMsg = isBotBlocked
+    ? `YouTube requires authentication on cloud serverless datacenter IPs (BotGuard protection). Provide your YouTube cookie via 'YT_COOKIE' environment variable in Vercel settings, 'x-yt-cookie' header, or '?cookie=' query parameter.`
+    : `No valid audio stream was found for track ${videoId}.`;
+
+  const err = new Error(helpMsg);
+  err.statusCode = isBotBlocked ? 403 : 404;
   err.diagnostics = diagnostics;
+  err.isBotBlocked = isBotBlocked;
   throw err;
 }
 
