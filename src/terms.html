@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms & Conditions — YouTube Music REST API</title>
+  <meta name="description"
+    content="Terms and Conditions for using the YouTube Music REST API. Read our usage policies, disclaimers, and legal information.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07090e;
+      --bg-elevated: #0d1017;
+      --card-bg: rgba(18, 22, 34, 0.72);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(255, 0, 51, 0.35);
+      --accent: #ff0033;
+      --accent-light: #ff2e55;
+      --text: #f3f5f8;
+      --text-muted: #8b92a4;
+      --code-bg: #0b0e14;
+      --success: #10b981;
+      --cyan: #38bdf8;
+      --purple: #a855f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+
+    *::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    html,
+    body {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header & Navigation */
+    header.site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7, 9, 14, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .logo-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-badge svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+    }
+
+    .logo-text {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-version {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-light);
+      background: rgba(255, 0, 51, 0.1);
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 0, 51, 0.25);
+    }
+
+    nav.header-nav {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    nav.header-nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    nav.header-nav a:hover {
+      color: var(--text);
+    }
+
+    nav.header-nav a.active {
+      color: var(--accent-light);
+      font-weight: 600;
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text) !important;
+      font-size: 13.5px !important;
+      font-weight: 600 !important;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+      flex: 1;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+    }
+
+    .terms-content {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Hero Section */
+    .terms-hero {
+      text-align: center;
+      max-width: 740px;
+      margin: 0 auto 48px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(255, 0, 51, 0.1);
+      border: 1px solid rgba(255, 0, 51, 0.25);
+      border-radius: 999px;
+      color: var(--accent-light);
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .terms-hero h1 {
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 14px;
+      color: var(--text);
+    }
+
+    .terms-hero p.lead {
+      font-size: 16.5px;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    .effective-date {
+      display: inline-block;
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 8px;
+    }
+
+    /* Terms Content Sections */
+    .terms-section {
+      margin-bottom: 40px;
+    }
+
+    .terms-section h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -0.3px;
+    }
+
+    .terms-section h2 .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 0, 51, 0.1);
+      border: 1px solid rgba(255, 0, 51, 0.2);
+      color: var(--accent-light);
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .terms-section p {
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1.7;
+      margin-bottom: 14px;
+    }
+
+    .terms-section ul {
+      list-style: none;
+      margin-bottom: 14px;
+      padding-left: 0;
+    }
+
+    .terms-section ul li {
+      position: relative;
+      padding-left: 22px;
+      color: var(--text-muted);
+      font-size: 14.5px;
+      line-height: 1.7;
+      margin-bottom: 8px;
+    }
+
+    .terms-section ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .terms-section code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      background: var(--code-bg);
+      padding: 2px 7px;
+      border-radius: 5px;
+      color: var(--cyan);
+      border: 1px solid var(--border);
+    }
+
+    /* Highlight Callout */
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: rgba(255, 0, 51, 0.05);
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .callout.info {
+      border-left-color: var(--cyan);
+      background: rgba(56, 189, 248, 0.05);
+    }
+
+    .callout.warning {
+      border-left-color: #fbbf24;
+      background: rgba(251, 191, 36, 0.05);
+    }
+
+    .callout strong {
+      color: var(--text);
+    }
+
+    /* Divider */
+    .terms-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 48px 0;
+    }
+
+    /* Contact Card */
+    .contact-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      text-align: center;
+    }
+
+    .contact-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+
+    .contact-card p {
+      color: var(--text-muted);
+      font-size: 14.5px;
+      margin-bottom: 18px;
+      line-height: 1.6;
+    }
+
+    .contact-card a.contact-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .contact-card a.contact-link:hover {
+      background: var(--accent-light);
+      transform: translateY(-1px);
+    }
+
+    .contact-card a.contact-link svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    /* Footer */
+    footer.site-footer {
+      background: var(--bg-elevated);
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      margin-top: auto;
+      position: relative;
+      z-index: 10;
+    }
+
+    .footer-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .footer-copy {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .footer-copy strong {
+      color: var(--text);
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s ease;
+    }
+
+    .footer-link:hover {
+      color: var(--accent-light);
+    }
+
+    .footer-link svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    @media (max-width: 768px) {
+      .terms-hero h1 {
+        font-size: 30px;
+      }
+
+      .footer-container {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="/" class="logo-group">
+        <div class="logo-badge">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+          </svg>
+        </div>
+        <span class="logo-text">YTMusic REST API</span>
+        <span class="logo-version">v1.0.0</span>
+      </a>
+
+      <nav class="header-nav">
+        <a href="/">Playground</a>
+        <a href="/docs">Documentation</a>
+        <a href="/about">About</a>
+        <a href="/terms" class="active">Terms</a>
+        <a href="/health" target="_blank">Status</a>
+        <a href="https://github.com/Argha2004/YT-Music-API" target="_blank" class="nav-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+          </svg>
+          GitHub
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Hero -->
+    <section class="terms-hero">
+      <div class="hero-badge">Legal</div>
+      <h1>Terms & Conditions</h1>
+      <p class="lead">
+        Please read these terms carefully before using the YouTube Music REST API. By accessing or using the API, you
+        agree to be bound by these terms.
+      </p>
+      <span class="effective-date">Effective Date: October 27, 2026</span>
+    </section>
+
+    <div class="terms-content">
+      <!-- Section 1: Acceptance of Terms -->
+    <div class="terms-section">
+      <h2><span class="section-num">1</span> Acceptance of Terms</h2>
+      <p>
+        By accessing, downloading, or using the YouTube Music REST API ("the API" or "the Service"), you acknowledge
+        that you have read, understood, and agree to be bound by these Terms & Conditions. If you do not agree with
+        any part of these terms, you must immediately discontinue use of the API.
+      </p>
+      <p>
+        These terms apply to all users, developers, contributors, and any individual or entity that interacts with
+        the API in any capacity.
+      </p>
+    </div>
+
+    <!-- Section 2: Project Description -->
+    <div class="terms-section">
+      <h2><span class="section-num">2</span> Project Description</h2>
+      <p>
+        The YouTube Music REST API is an independent, open-source research project that provides RESTful endpoints
+        for searching, retrieving metadata, and streaming audio from YouTube Music. The API interfaces with Google's
+        internal Innertube protocol to deliver developer-friendly JSON responses.
+      </p>
+      <div class="callout info">
+        <strong>Important:</strong> This project is NOT affiliated with, endorsed by, maintained by, or connected to
+        Google LLC, YouTube, YouTube Music, or any of their subsidiaries.
+      </div>
+    </div>
+
+    <!-- Section 3: Permitted Use -->
+    <div class="terms-section">
+      <h2><span class="section-num">3</span> Permitted Use</h2>
+      <p>You may use the API strictly for:</p>
+      <ul>
+        <li>Personal, non-commercial research and educational purposes</li>
+        <li>Building hobby or portfolio projects for learning and demonstration</li>
+        <li>Academic research and coursework related to web APIs and streaming protocols</li>
+        <li>Contributing to the open-source project through code, documentation, or bug reports</li>
+      </ul>
+    </div>
+
+    <!-- Section 4: Prohibited Use -->
+    <div class="terms-section">
+      <h2><span class="section-num">4</span> Prohibited Use</h2>
+      <p>You are strictly prohibited from using the API for:</p>
+      <ul>
+        <li>Any commercial or for-profit activity, including selling access to the API or its data</li>
+        <li>Mass downloading, scraping, or archiving copyrighted audio, metadata, or artwork</li>
+        <li>Circumventing digital rights management (DRM) protections or content access restrictions</li>
+        <li>Redistributing copyrighted audio files, album art, or artist imagery without authorization</li>
+        <li>Building services that compete with or replicate YouTube Music's commercial offerings</li>
+        <li>Any activity that violates applicable local, state, national, or international law</li>
+        <li>Automated abuse, denial-of-service attacks, or excessive request flooding</li>
+      </ul>
+      <div class="callout warning">
+        <strong>Warning:</strong> Violation of these prohibited uses may result in immediate termination of access
+        and potential legal action by the relevant copyright holders.
+      </div>
+    </div>
+
+    <!-- Section 5: Intellectual Property -->
+    <div class="terms-section">
+      <h2><span class="section-num">5</span> Intellectual Property</h2>
+      <p>
+        All audio content, music recordings, album artwork, track titles, artist names, and associated metadata
+        delivered through the API remain the exclusive intellectual property of their respective copyright owners,
+        record labels, publishers, and artists.
+      </p>
+      <p>
+        The API source code is licensed under the <strong>MIT License</strong>. This license applies solely to the
+        codebase and does not extend to any copyrighted content accessed through the API.
+      </p>
+    </div>
+
+    <!-- Section 6: No Warranty -->
+    <div class="terms-section">
+      <h2><span class="section-num">6</span> Disclaimer of Warranties</h2>
+      <p>
+        The API is provided <strong>"AS IS"</strong> and <strong>"AS AVAILABLE"</strong> without warranties of any
+        kind, whether express, implied, or statutory. The maintainers make no warranties regarding:
+      </p>
+      <ul>
+        <li>The accuracy, completeness, or reliability of any data returned by the API</li>
+        <li>Continuous, uninterrupted, or error-free availability of the Service</li>
+        <li>Compatibility with future versions of YouTube Music's internal protocol</li>
+        <li>Fitness for any particular purpose or use case</li>
+      </ul>
+      <p>
+        The API depends on undocumented third-party protocols that may change without notice. Functionality may
+        degrade or cease at any time.
+      </p>
+    </div>
+
+    <!-- Section 7: Limitation of Liability -->
+    <div class="terms-section">
+      <h2><span class="section-num">7</span> Limitation of Liability</h2>
+      <p>
+        In no event shall the author, contributors, or maintainers of this project be liable for any direct,
+        indirect, incidental, special, consequential, or punitive damages arising out of or in connection with your
+        use of the API, including but not limited to:
+      </p>
+      <ul>
+        <li>Loss of data, revenue, profits, or business opportunities</li>
+        <li>Service interruptions, downtime, or API unavailability</li>
+        <li>Legal claims arising from misuse of copyrighted content</li>
+        <li>Third-party claims resulting from unauthorized use of the Service</li>
+      </ul>
+    </div>
+
+    <!-- Section 8: Privacy & Data -->
+    <div class="terms-section">
+      <h2><span class="section-num">8</span> Privacy & Data Collection</h2>
+      <p>
+        The API does not collect, store, or process personal user data. No analytics, tracking cookies, or telemetry
+        are embedded in the API. When using authenticated endpoints (via <code>x-yt-cookie</code> header), session
+        cookies are forwarded directly to YouTube's servers and are never stored or logged by this API.
+      </p>
+      <p>
+        Users are responsible for safeguarding their own session credentials and should never share authentication
+        tokens publicly.
+      </p>
+    </div>
+
+    <!-- Section 9: Third-Party Services -->
+    <div class="terms-section">
+      <h2><span class="section-num">9</span> Third-Party Services</h2>
+      <p>
+        The API interacts with Google's YouTube Music services via reverse-engineered Innertube endpoints. Usage of
+        this API is subject to Google's own Terms of Service. The maintainers are not responsible for changes to
+        Google's platform, policies, or enforcement actions.
+      </p>
+    </div>
+
+    <!-- Section 10: Modifications -->
+    <div class="terms-section">
+      <h2><span class="section-num">10</span> Changes to These Terms</h2>
+      <p>
+        The maintainers reserve the right to update or modify these Terms & Conditions at any time without prior
+        notice. Updated terms will be posted on this page with a revised effective date. Continued use of the API
+        after changes constitutes acceptance of the updated terms.
+      </p>
+    </div>
+
+    <!-- Section 11: Governing Law -->
+    <div class="terms-section">
+      <h2><span class="section-num">11</span> Governing Law</h2>
+      <p>
+        These Terms & Conditions shall be governed by and construed in accordance with the laws of India, without
+        regard to its conflict of law provisions. Any disputes arising from these terms shall be subject to the
+        exclusive jurisdiction of the courts in India.
+      </p>
+    </div>
+
+    <hr class="terms-divider">
+
+    <!-- Contact Card -->
+    <div class="contact-card">
+      <h3>Questions About These Terms?</h3>
+      <p>
+        If you have questions, concerns, or require clarification about these Terms & Conditions,
+        feel free to reach out via GitHub.
+      </p>
+      <a href="https://github.com/Argha2004/YT-Music-API/issues" target="_blank" class="contact-link">
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+        </svg>
+        Open an Issue on GitHub
+      </a>
+    </div>
+    </div>
+  </div>
+
+  <!-- Footer with Copyright and GitHub link -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-copy">
+        <p>Copyright &copy; 2026 <strong>Arghadeep Pakhira</strong>. All rights reserved.</p>
+        <p style="font-size: 13px; margin-top: 4px; color: var(--text-muted);">
+          High-performance YouTube Music Innertube REST API with Range audio streaming proxy.
+        </p>
+      </div>
+
+      <div class="footer-links">
+        <a href="/" class="footer-link">API Playground</a>
+        <a href="/docs" class="footer-link">Documentation</a>
+        <a href="/about" class="footer-link">About</a>
+        <a href="/terms" class="footer-link">Terms & Conditions</a>
+        <a href="/health" target="_blank" class="footer-link">Status</a>
+        <a href="https://github.com/Argha2004/YT-Music-API" target="_blank" class="footer-link">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </footer>
+</body>
+
+</html>

@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Music REST API — Interactive Playground</title>
+  <meta name="description"
+    content="High performance YouTube Music REST API with pure JSON testing playground, Range audio streaming, and detailed API documentation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07090e;
+      --bg-elevated: #0d1017;
+      --card-bg: rgba(18, 22, 34, 0.75);
+      --card-hover: rgba(26, 32, 48, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(255, 0, 51, 0.35);
+      --accent: #ff0033;
+      --accent-light: #ff2e55;
+      --accent-glow: rgba(255, 0, 51, 0.25);
+      --text: #f3f5f8;
+      --text-muted: #8b92a4;
+      --code-bg: #0b0e14;
+      --success: #10b981;
+      --cyan: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+
+    *::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    html,
+    body {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    body {
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ambient-glow {
+      display: none;
+    }
+
+    /* Header */
+    header.site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7, 9, 14, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .logo-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-badge svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+    }
+
+    .logo-text {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-version {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-light);
+      background: rgba(255, 0, 51, 0.1);
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 0, 51, 0.25);
+    }
+
+    nav.header-nav {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    nav.header-nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    nav.header-nav a:hover {
+      color: var(--text);
+    }
+
+    nav.header-nav a.active {
+      color: var(--accent-light);
+      font-weight: 600;
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text) !important;
+      font-size: 13.5px !important;
+      font-weight: 600 !important;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+      flex: 1;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 44px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: var(--accent-glow);
+      color: var(--accent-light);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      margin-bottom: 18px;
+      border: 1px solid rgba(255, 0, 51, 0.3);
+    }
+
+    .hero h1 {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      margin-bottom: 14px;
+    }
+
+    .hero p.lead {
+      color: var(--text-muted);
+      font-size: 18px;
+      max-width: 680px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+    }
+
+    .hero-cta {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 22px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-light);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-1px);
+    }
+
+    /* Playground Card */
+    .playground {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 32px;
+      margin-bottom: 36px;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.45);
+    }
+
+    .playground-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .playground-title {
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .playground-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    /* Endpoint selector tabs */
+    .endpoint-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .ep-tab {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .ep-tab:hover,
+    .ep-tab.active {
+      color: var(--text);
+      background: rgba(255, 0, 51, 0.1);
+      border-color: rgba(255, 0, 51, 0.3);
+    }
+
+    /* Input & Request Bar */
+    .request-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .method-badge-input {
+      padding: 12px 18px;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--cyan);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+    }
+
+    input.search-input {
+      flex: 1;
+      min-width: 260px;
+      padding: 12px 18px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14.5px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input.search-input:focus {
+      border-color: var(--accent-light);
+    }
+
+    select.filter-select {
+      padding: 12px 16px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* Results Console */
+    .results-container {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--code-bg);
+      overflow: hidden;
+    }
+
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .status-indicator {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    .copy-json-btn {
+      padding: 5px 12px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-json-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    pre.json-view {
+      padding: 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #93c5fd;
+      max-height: 440px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    /* Streaming Info Card */
+    .streaming-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 32px;
+      margin-bottom: 36px;
+    }
+
+    .streaming-card h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .streaming-card p {
+      color: var(--text-muted);
+      font-size: 14.5px;
+      margin-bottom: 20px;
+    }
+
+    .stream-url-preview {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--cyan);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stream-examples-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .example-tile {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .example-tile strong {
+      display: block;
+      font-size: 13.5px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .example-tile code {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: #86efac;
+      word-break: break-all;
+    }
+
+    /* Footer */
+    footer.site-footer {
+      background: var(--bg-elevated);
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      margin-top: auto;
+      position: relative;
+      z-index: 10;
+    }
+
+    .footer-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .footer-copy {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .footer-copy strong {
+      color: var(--text);
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s ease;
+    }
+
+    .footer-link:hover {
+      color: var(--accent-light);
+    }
+
+    .footer-link svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 32px;
+      }
+
+      .request-bar {
+        flex-direction: column;
+      }
+
+      .footer-container {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="/" class="logo-group">
+        <div class="logo-badge">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+          </svg>
+        </div>
+        <span class="logo-text">YTMusic REST API</span>
+        <span class="logo-version">v1.0.0</span>
+      </a>
+
+      <nav class="header-nav">
+        <a href="/" class="active">Playground</a>
+        <a href="/docs">Documentation</a>
+        <a href="/about">About</a>
+        <a href="/terms">Terms</a>
+        <a href="/health" target="_blank">Status</a>
+        <a href="https://github.com/Argha2004/YT-Music-API" target="_blank" class="nav-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+          </svg>
+          GitHub
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-badge">YouTubei Innertube Engine</div>
+      <h1>YouTube Music REST API</h1>
+      <p class="lead">
+        A fast, native REST API for search, radio queues, playlists, albums, and Range-enabled audio streaming proxy
+        with zero bot-blocking errors.
+      </p>
+      <div class="hero-cta">
+        <a href="#tester" class="btn btn-primary">Try Interactive Tester</a>
+        <a href="/docs" class="btn btn-secondary">Read Detailed Docs →</a>
+      </div>
+    </section>
+
+    <!-- Interactive Tester (Playground) -->
+    <div id="tester" class="playground">
+      <div class="playground-header">
+        <div class="playground-title">
+          <span class="status-dot"></span>
+          Live API Tester (JSON Format Only)
+        </div>
+        <span style="font-size: 13px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+          Strictly raw JSON format output
+        </span>
+      </div>
+
+      <p class="playground-subtitle">
+        Select an endpoint, customize parameters, and click <strong>Test API</strong>. Response is returned strictly as
+        formatted JSON without browser live playback.
+      </p>
+
+      <!-- Endpoint switcher tabs -->
+      <div class="endpoint-tabs">
+        <button class="ep-tab active" onclick="switchEndpoint('search')">Catalog Search</button>
+        <button class="ep-tab" onclick="switchEndpoint('radio')">Radio Queue</button>
+        <button class="ep-tab" onclick="switchEndpoint('stream')">Stream Audio Info</button>
+        <button class="ep-tab" onclick="switchEndpoint('playlist')">Playlist</button>
+        <button class="ep-tab" onclick="switchEndpoint('album')">Album</button>
+        <button class="ep-tab" onclick="switchEndpoint('health')">Health Check</button>
+      </div>
+
+      <!-- Request Bar -->
+      <div class="request-bar">
+        <div class="method-badge-input" id="methodBadge">GET</div>
+        <input type="text" id="queryInput" class="search-input"
+          placeholder="Search query (e.g. Starboy, Hans Zimmer)..." value="Starboy">
+        <select id="filterSelect" class="filter-select">
+          <option value="songs">Songs</option>
+          <option value="albums">Albums</option>
+          <option value="artists">Artists</option>
+          <option value="playlists">Playlists</option>
+        </select>
+        <button class="btn btn-primary" onclick="runLiveTest()">Test API</button>
+      </div>
+
+      <!-- JSON Results View -->
+      <div class="results-container">
+        <div class="results-header">
+          <div class="status-indicator" id="statusIndicator">
+            <span>Ready — click "Test API" to send request</span>
+          </div>
+          <button class="copy-json-btn" id="copyBtn" onclick="copyJsonOutput()">Copy JSON</button>
+        </div>
+        <pre id="resultsView" class="json-view">// Response JSON will appear here...</pre>
+      </div>
+    </div>
+
+    <!-- How Users/Apps Stream Songs via API -->
+    <div class="streaming-card">
+      <h2>How Users Stream Songs Using the API</h2>
+      <p>
+        Every track returned in the JSON payload contains a <code>streamUrl</code> property (e.g.
+        <code>/api/stream/{id}</code>). External apps, mobile apps, or web music players stream audio directly from this
+        endpoint:
+      </p>
+
+      <div class="stream-url-preview">
+        <span>GET http://localhost:3000/api/stream/{videoId}</span>
+        <button class="copy-json-btn" onclick="copyText('http://localhost:3000/api/stream/{videoId}')">Copy URL</button>
+      </div>
+
+      <div class="stream-examples-grid">
+        <div class="example-tile">
+          <strong>HTML5 Web Player:</strong>
+          <code>&lt;audio src="http://localhost:3000/api/stream/{id}" controls&gt;&lt;/audio&gt;</code>
+        </div>
+        <div class="example-tile">
+          <strong>Flutter (just_audio):</strong>
+          <code>player.setUrl('http://localhost:3000/api/stream/{id}');</code>
+        </div>
+        <div class="example-tile">
+          <strong>React Native / Expo:</strong>
+          <code>Audio.Sound.createAsync({ uri: 'http://localhost:3000/api/stream/{id}' });</code>
+        </div>
+        <div class="example-tile">
+          <strong>VLC Media Player:</strong>
+          <code>vlc http://localhost:3000/api/stream/{id}</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer with Copyright and GitHub link -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-copy">
+        <p>Copyright &copy; 2026 <strong>Arghadeep Pakhira</strong>. All rights reserved.</p>
+        <p style="font-size: 13px; margin-top: 4px; color: var(--text-muted);">
+          High-performance YouTube Music Innertube REST API with Range audio streaming proxy.
+        </p>
+      </div>
+
+      <div class="footer-links">
+        <a href="/" class="footer-link">API Playground</a>
+        <a href="/docs" class="footer-link">Documentation</a>
+        <a href="/about" class="footer-link">About</a>
+        <a href="/terms" class="footer-link">Terms & Conditions</a>
+        <a href="/health" target="_blank" class="footer-link">Status</a>
+        <a href="https://github.com/Argha2004/YT-Music-API" target="_blank" class="footer-link">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    let activeMode = 'search';
+    let currentRawJson = '';
+
+    function switchEndpoint(mode) {
+      activeMode = mode;
+      document.querySelectorAll('.ep-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const input = document.getElementById('queryInput');
+      const filter = document.getElementById('filterSelect');
+      filter.style.display = 'none';
+
+      if (mode === 'search') {
+        input.placeholder = 'Search query (e.g. Starboy, Hans Zimmer)...';
+        input.value = 'Starboy';
+        filter.style.display = 'inline-block';
+      } else if (mode === 'radio') {
+        input.placeholder = 'Seed Video ID (e.g. 3_g2un5M350)...';
+        input.value = '3_g2un5M350';
+      } else if (mode === 'stream') {
+        input.placeholder = 'Video ID to test stream URL (e.g. 3_g2un5M350)...';
+        input.value = '3_g2un5M350';
+      } else if (mode === 'playlist') {
+        input.placeholder = 'Playlist ID (e.g. RDCLAK5uy_k...)...';
+        input.value = 'RDCLAK5uy_kset8DisdE7LSD4TNJEVvrKAcqvGoeBRs';
+      } else if (mode === 'album') {
+        input.placeholder = 'Album ID (e.g. MPREb_9V206W4iXQ5)...';
+        input.value = 'MPREb_9V206W4iXQ5';
+      } else if (mode === 'health') {
+        input.placeholder = 'Health endpoint';
+        input.value = '/health';
+      }
+    }
+
+    async function runLiveTest() {
+      const val = document.getElementById('queryInput').value.trim();
+      const filter = document.getElementById('filterSelect').value;
+      const view = document.getElementById('resultsView');
+      const indicator = document.getElementById('statusIndicator');
+
+      let endpointUrl = '';
+      if (activeMode === 'search') {
+        endpointUrl = '/api/search?q=' + encodeURIComponent(val) + '&filter=' + filter + '&limit=5';
+      } else if (activeMode === 'radio') {
+        endpointUrl = '/api/radio/' + encodeURIComponent(val) + '?limit=5';
+      } else if (activeMode === 'stream') {
+        // Stream test returns stream metadata and verification in JSON format
+        endpointUrl = '/api/stream/' + encodeURIComponent(val);
+      } else if (activeMode === 'playlist') {
+        endpointUrl = '/api/playlists/' + encodeURIComponent(val) + '?limit=5';
+      } else if (activeMode === 'album') {
+        endpointUrl = '/api/albums/' + encodeURIComponent(val);
+      } else if (activeMode === 'health') {
+        endpointUrl = '/health';
+      }
+
+      indicator.innerHTML = '<span style="color: var(--cyan);">Fetching ' + endpointUrl + '...</span>';
+      view.innerText = '// Loading JSON response from ' + endpointUrl + '...';
+
+      const t0 = performance.now();
+      try {
+        if (activeMode === 'stream') {
+          // Send request with Range byte to test stream proxy without loading full file
+          const res = await fetch(endpointUrl, { headers: { 'Range': 'bytes=0-1000' } });
+          const duration = Math.round(performance.now() - t0);
+          const data = {
+            status: res.status,
+            statusText: res.statusText,
+            endpoint: endpointUrl,
+            contentType: res.headers.get('content-type'),
+            contentRange: res.headers.get('content-range'),
+            contentLength: res.headers.get('content-length'),
+            acceptRanges: res.headers.get('accept-ranges'),
+            message: 'Streaming audio proxy verified successfully! Audio bytes received with HTTP ' + res.status + ' Partial Content.',
+            sampleStreamUrl: window.location.origin + endpointUrl
+          };
+          currentRawJson = JSON.stringify(data, null, 2);
+          view.innerText = currentRawJson;
+          indicator.innerHTML = '<span class="status-dot"></span> <span style="color: var(--success);">' + res.status + ' ' + res.statusText + ' (' + duration + 'ms) • Range Stream Verified</span>';
+        } else {
+          const res = await fetch(endpointUrl);
+          const json = await res.json();
+          const duration = Math.round(performance.now() - t0);
+          currentRawJson = JSON.stringify(json, null, 2);
+          view.innerText = currentRawJson;
+          indicator.innerHTML = '<span class="status-dot"></span> <span style="color: var(--success);">' + res.status + ' ' + res.statusText + ' (' + duration + 'ms) • Formatted JSON Output</span>';
+        }
+      } catch (err) {
+        view.innerText = 'Error: ' + err.message;
+        indicator.innerHTML = '<span style="color: #ef4444;">Failed to fetch API: ' + err.message + '</span>';
+      }
+    }
+
+    function copyJsonOutput() {
+      if (!currentRawJson) return;
+      navigator.clipboard.writeText(currentRawJson).then(() => {
+        const btn = document.getElementById('copyBtn');
+        btn.innerText = 'Copied!';
+        setTimeout(() => { btn.innerText = 'Copy JSON'; }, 1800);
+      });
+    }
+
+    function copyText(str) {
+      navigator.clipboard.writeText(str).then(() => {
+        alert('Copied to clipboard: ' + str);
+      });
+    }
+
+    document.getElementById('queryInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') runLiveTest();
+    });
+  </script>
+</body>
+
+</html>

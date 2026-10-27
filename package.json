@@ -1,0 +1,36 @@
+{
+  "name": "ytmusic-rest-api",
+  "version": "1.0.0",
+  "description": "High-performance YouTube Music REST API server using YouTubei Innertube & SAPISID authentication with Range-enabled audio streaming proxy",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node test-api.mjs"
+  },
+  "keywords": [
+    "youtube-music",
+    "ytmusic",
+    "rest-api",
+    "innertube",
+    "audio-stream",
+    "music-api"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Arghadeep Pakhira <https://github.com/Argha2004>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Argha2004/YT-Music-API.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Argha2004/YT-Music-API/issues"
+  },
+  "homepage": "https://github.com/Argha2004/YT-Music-API#readme",
+  "dependencies": {
+    "youtubei.js": "^18.3.0"
+  }
+}

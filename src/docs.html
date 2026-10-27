@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Documentation — YouTube Music REST API</title>
+  <meta name="description"
+    content="Complete REST API documentation for YouTube Music catalog search, radio queue, albums, playlists, and Range-enabled audio streaming proxy.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07090e;
+      --bg-elevated: #0d1017;
+      --card-bg: rgba(18, 22, 34, 0.72);
+      --card-hover: rgba(26, 32, 48, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(255, 0, 51, 0.35);
+      --accent: #ff0033;
+      --accent-light: #ff2e55;
+      --accent-glow: rgba(255, 0, 51, 0.25);
+      --text: #f3f5f8;
+      --text-muted: #8b92a4;
+      --code-bg: #0b0e14;
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.15);
+      --cyan: #38bdf8;
+      --purple: #a855f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+
+    *::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    html,
+    body {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Ambient background glow */
+    .ambient-glow {
+      display: none;
+    }
+
+    /* Header & Navigation */
+    header.site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7, 9, 14, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .logo-badge {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-badge svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+    }
+
+    .logo-text {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-version {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-light);
+      background: rgba(255, 0, 51, 0.1);
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 0, 51, 0.25);
+    }
+
+    nav.header-nav {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    nav.header-nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    nav.header-nav a:hover {
+      color: var(--text);
+    }
+
+    nav.header-nav a.active {
+      color: var(--accent-light);
+      font-weight: 600;
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text) !important;
+      font-size: 13.5px !important;
+      font-weight: 600 !important;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
+    }
+
+    /* Layout */
+    .docs-wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 60px;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 36px;
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Sidebar Navigation */
+    aside.sidebar {
+      position: sticky;
+      top: 96px;
+      height: calc(100vh - 120px);
+      overflow-y: auto;
+      padding-right: 12px;
+    }
+
+    aside.sidebar::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    .sidebar-section {
+      margin-bottom: 24px;
+    }
+
+    .sidebar-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .sidebar-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+
+    .sidebar-link:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .sidebar-link.active {
+      color: var(--accent-light);
+      background: rgba(255, 0, 51, 0.08);
+      font-weight: 600;
+    }
+
+    .method-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .method-pill.get {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--cyan);
+    }
+
+    .method-pill.post {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+    }
+
+    .method-pill.del {
+      background: rgba(248, 113, 113, 0.15);
+      color: #f87171;
+    }
+
+    /* Content Area */
+    main.docs-content {
+      min-width: 0;
+    }
+
+    .doc-hero {
+      margin-bottom: 48px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 32px;
+    }
+
+    .doc-hero h1 {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+
+    .doc-hero p.lead {
+      font-size: 17px;
+      color: var(--text-muted);
+      max-width: 800px;
+      line-height: 1.6;
+    }
+
+    .doc-section {
+      margin-bottom: 60px;
+      scroll-margin-top: 100px;
+    }
+
+    .doc-section h2 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: -0.3px;
+    }
+
+    .doc-section p {
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      font-size: 15px;
+    }
+
+    /* Endpoint Documentation Card */
+    .endpoint-block {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 32px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+      scroll-margin-top: 100px;
+      transition: border-color 0.2s;
+    }
+
+    .endpoint-block:hover {
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .endpoint-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      gap: 16px;
+    }
+
+    .endpoint-route {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .endpoint-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .endpoint-badge.get {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--cyan);
+    }
+
+    .endpoint-badge.post {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+    }
+
+    .endpoint-badge.del {
+      background: rgba(248, 113, 113, 0.15);
+      color: #f87171;
+    }
+
+    .endpoint-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .try-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-light);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      background: rgba(255, 0, 51, 0.08);
+      border: 1px solid rgba(255, 0, 51, 0.2);
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .try-link:hover {
+      background: rgba(255, 0, 51, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .endpoint-desc {
+      font-size: 14.5px;
+      color: var(--text-muted);
+      margin-bottom: 22px;
+      line-height: 1.6;
+    }
+
+    /* Parameter Tables */
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 22px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    table.param-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+    }
+
+    table.param-table th {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    table.param-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text);
+    }
+
+    table.param-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .param-name {
+      font-family: 'JetBrains Mono', monospace;
+      color: #93c5fd;
+      font-weight: 600;
+    }
+
+    .param-type {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .param-required {
+      color: #ef4444;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .param-optional {
+      color: var(--text-muted);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    /* Code Snippet Box */
+    .code-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+
+    .code-box-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .code-tab {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .code-tab.active,
+    .code-tab:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 11.5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    pre.code-content {
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #cbd5e1;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+
+    /* Alert / Callout boxes */
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: rgba(255, 0, 51, 0.05);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin: 18px 0;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .callout.info {
+      border-left-color: var(--cyan);
+      background: rgba(56, 189, 248, 0.05);
+    }
+
+    .callout.success {
+      border-left-color: var(--success);
+      background: rgba(16, 185, 129, 0.05);
+    }
+
+    /* Footer */
+    footer.site-footer {
+      background: var(--bg-elevated);
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      margin-top: auto;
+      position: relative;
+      z-index: 10;
+    }
+
+    .footer-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .footer-copy {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .footer-copy strong {
+      color: var(--text);
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .footer-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s ease;
+    }
+
+    .footer-link:hover {
+      color: var(--accent-light);
+    }
+
+    .footer-link svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    @media (max-width: 900px) {
+      .docs-wrapper {
+        grid-template-columns: 1fr;
+      }
+
+      aside.sidebar {
+        display: none;
+      }
+
+      .doc-hero h1 {
+        font-size: 28px;
+      }
+
+      .endpoint-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="/" class="logo-group">
+        <div class="logo-badge">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+          </svg>
+        </div>
+        <span class="logo-text">YTMusic REST API</span>
+        <span class="logo-version">v1.0.0</span>
+      </a>
+
+      <nav class="header-nav">
+        <a href="/">Playground</a>
+        <a href="/docs" class="active">Documentation</a>
+        <a href="/about">About</a>
+        <a href="/terms">Terms</a>
+        <a href="/health" target="_blank">Status</a>
+        <a href="https://github.com/Argha2004/YT-Music-API" target="_blank" class="nav-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+          </svg>
+          GitHub
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Docs Layout -->
+  <div class="docs-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Getting Started</div>
+        <ul class="sidebar-links">
+          <li><a href="#overview" class="sidebar-link active">Overview</a></li>
+          <li><a href="#base-url" class="sidebar-link">Base URL & Headers</a></li>
+          <li><a href="#streaming-guide" class="sidebar-link">Streaming Audio Proxy</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">Endpoints</div>
+        <ul class="sidebar-links">
+          <li><a href="#search" class="sidebar-link"><span class="method-pill get">GET</span> /api/search</a></li>
+          <li><a href="#stream" class="sidebar-link"><span class="method-pill get">GET</span> /api/stream/:id</a></li>
+          <li><a href="#radio" class="sidebar-link"><span class="method-pill get">GET</span> /api/radio/:id</a></li>
+          <li><a href="#playlists" class="sidebar-link"><span class="method-pill get">GET</span> /api/playlists/:id</a>
+          </li>
+          <li><a href="#albums" class="sidebar-link"><span class="method-pill get">GET</span> /api/albums/:id</a></li>
+          <li><a href="#artists" class="sidebar-link"><span class="method-pill get">GET</span> /api/artists/:id</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">Authenticated Endpoints</div>
+        <ul class="sidebar-links">
+          <li><a href="#auth-overview" class="sidebar-link">Auth (SAPISID Cookie)</a></li>
+          <li><a href="#account-liked" class="sidebar-link"><span class="method-pill get">GET</span>
+              /api/account/liked</a></li>
+          <li><a href="#account-history" class="sidebar-link"><span class="method-pill get">GET</span>
+              /api/account/history</a></li>
+          <li><a href="#account-like" class="sidebar-link"><span class="method-pill post">POST</span>
+              /api/account/like/:id</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">System</div>
+        <ul class="sidebar-links">
+          <li><a href="#health" class="sidebar-link"><span class="method-pill get">GET</span> /health</a></li>
+          <li><a href="#status-codes" class="sidebar-link">Status Codes</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="docs-content">
+      <!-- Overview -->
+      <section id="overview" class="doc-hero">
+        <h1>YouTube Music REST API Documentation</h1>
+        <p class="lead">
+          A high-performance, developer-friendly REST API built directly on top of Google's YouTube Music Innertube
+          protocol with full HTTP 206 Partial Content audio streaming support.
+        </p>
+      </section>
+
+      <!-- Base URL -->
+      <section id="base-url" class="doc-section">
+        <h2>Base URL & Setup</h2>
+        <p>All endpoints are served from the local or deployed host:</p>
+        <div class="code-box">
+          <div class="code-box-header">
+            <span style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">Base
+              URL</span>
+            <button class="copy-btn" onclick="copySnippet('http://localhost:3000')">Copy</button>
+          </div>
+          <pre class="code-content">http://localhost:3000</pre>
+        </div>
+
+        <div class="callout info">
+          <strong>CORS Enabled:</strong> Cross-Origin Resource Sharing (CORS) is enabled by default for all origins
+          (<code>*</code>), allowing seamless integration with web browsers, Electron, Flutter, and React Native apps.
+        </div>
+      </section>
+
+      <!-- Audio Streaming Proxy Guide -->
+      <section id="streaming-guide" class="doc-section">
+        <h2>Streaming Audio Proxy (HTTP 206)</h2>
+        <p>
+          GoogleVideo CDN audio links are strictly IP-bound and protected by BotGuard/PO-Token verification. This API
+          provides an integrated streaming proxy at <code>/api/stream/:videoId</code> that forwards HTTP Range byte
+          requests seamlessly.
+        </p>
+
+        <div class="callout success">
+          <strong>Zero 403 Errors:</strong> The stream proxy uses the Android Innertube profile with automatic fail-safe
+          process streaming to bypass GoogleBot restrictions, providing fast, continuous streaming.
+        </div>
+
+        <div class="table-container">
+          <table class="param-table">
+            <thead>
+              <tr>
+                <th>Platform / Language</th>
+                <th>Implementation Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>HTML5 Web Player</strong></td>
+                <td><code
+                    style="color: var(--cyan);">&lt;audio src="http://localhost:3000/api/stream/3_g2un5M350" controls&gt;&lt;/audio&gt;</code>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Flutter (just_audio)</strong></td>
+                <td><code
+                    style="color: var(--cyan);">player.setUrl('http://localhost:3000/api/stream/3_g2un5M350');</code>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>React Native / Expo</strong></td>
+                <td><code
+                    style="color: var(--cyan);">Audio.Sound.createAsync({ uri: 'http://localhost:3000/api/stream/3_g2un5M350' });</code>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>VLC / Media Player</strong></td>
+                <td><code style="color: var(--cyan);">vlc http://localhost:3000/api/stream/3_g2un5M350</code></td>
+              </tr>
+              <tr>
+                <td><strong>cURL / Download</strong></td>
+                <td><code
+                    style="color: var(--cyan);">curl -N "http://localhost:3000/api/stream/3_g2un5M350" --output song.mp4</code>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Search Endpoint -->
+      <section id="search" class="endpoint-block">
+        <div class="endpoint-header">
+          <div class="endpoint-route">
+            <span class="endpoint-badge get">GET</span>
+            <span class="endpoint-path">/api/search</span>
+          </div>
+          <a href="/?query=Starboy&filter=songs" class="try-link">Try in Playground →</a>
+        </div>
+        <div class="endpoint-desc">
+          Performs filtered catalog searches across YouTube Music with full track metadata, artists, album names,
+          duration, thumbnail URLs, and ready-to-stream URLs.
+        </div>
+
+        <div class="table-container">
+          <table class="param-table">
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Type</th>
+                <th>In</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="param-name">q</span></td>
+                <td><span class="param-type">string</span></td>
+                <td>query</td>
+                <td><span class="param-required">Required</span></td>
+                <td>Search keyword or query (e.g. "Starboy", "Hans Zimmer").</td>
+              </tr>
+              <tr>
+                <td><span class="param-name">filter</span></td>
+                <td><span class="param-type">string</span></td>
+                <td>query</td>
+                <td><span class="param-optional">Optional</span></td>
+                <td>Category filter: <code>songs</code>, <code>albums</code>, <code>artists</code>, or
+                  <code>playlists</code>. Default: <code>songs</code>.
+                </td>
+              </tr>
+              <tr>
+                <td><span class="param-name">limit</span></td>
+                <td><span class="param-type">integer</span></td>
+                <td>query</td>
+                <td><span class="param-optional">Optional</span></td>
+                <td>Maximum number of results to return. Default: <code>20</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="code-box">
+          <div class="code-box-header">
+            <span style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">Sample
+              Request & Response</span>
+            <button class="copy-btn"
+              onclick="copySnippet('curl -X GET &quot;http://localhost:3000/api/search?q=Starboy&amp;filter=songs&amp;limit=1&quot;')">Copy
+              cURL</button>
+          </div>
+          <pre class="code-content">// GET http://localhost:3000/api/search?q=Starboy&filter=songs&limit=1
+{
+  "query": "Starboy",
+  "filter": "songs",
+  "total": 1,
+  "results": [
+    {
+      "id": "3_g2un5M350",
+      "title": "Starboy (feat. Daft Punk)",
+      "artists": [{ "name": "The Weeknd", "id": "UCLYV6hHlupm_S_ObS1W-DYw" }],
+      "artist": "The Weeknd",
+      "album": "Starboy",
+      "albumId": "MPREb_9V206W4iXQ5",
+      "duration": 230,
+      "durationText": "3:50",
+      "thumbnail": "https://lh3.googleusercontent.com/...",
+      "streamUrl": "/api/stream/3_g2un5M350"
+    }
+  ]
+}</pre>
+        </div>
+      </section>
+
+      <!-- Audio Stream Proxy Endpoint -->
+      <section id="stream" class="endpoint-block">
+        <div class="endpoint-header">
+          <div class="endpoint-route">
+            <span class="endpoint-badge get">GET</span>
+            <span class="endpoint-path">/api/stream/:videoId</span>
+          </div>
+          <a href="/api/stream/3_g2un5M350" target="_blank" class="try-link">Stream Test Song →</a>
+        </div>
+        <div class="endpoint-desc">
+          Streams real-time high-quality audio with HTTP <code>206 Partial Content</code> (Range bytes) support for fast
+          buffering and instant seeking.
+        </div>
+
+        <div class="table-container">
+          <table class="param-table">
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Type</th>
+                <th>In</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="param-name">videoId</span></td>
+                <td><span class="param-type">string</span></td>
+                <td>path</td>
+                <td><span class="param-required">Required</span></td>
+                <td>The 11-character YouTube video ID (e.g. <code>3_g2un5M350</code>).</td>
+              </tr>
+              <tr>
+                <td><span class="param-name">Range</span></td>
+                <td><span class="param-type">string</span></td>
+                <td>header</td>
+                <td><span class="param-optional">Optional</span></td>
+                <td>Standard HTTP Range byte header for seeking (e.g. <code>bytes=0-100000</code>).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="code-box">
+          <div class="code-box-header">
+            <span style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">Sample
+              Range Request</span>
+            <button class="copy-btn"
+              onclick="copySnippet('curl -i -H &quot;Range: bytes=0-1000&quot; http://localhost:3000/api/stream/3_g2un5M350')">Copy
+              cURL</button>
+          </div>
+          <pre class="code-content">// HTTP Request
+GET /api/stream/3_g2un5M350 HTTP/1.1
+Host: localhost:3000
+Range: bytes=0-1000
+
+// HTTP Response
+HTTP/1.1 206 Partial Content
+Content-Type: video/mp4
+Content-Range: bytes 0-1000/2182350
+Content-Length: 1001
+Accept-Ranges: bytes
+Cache-Control: no-cache
+
+[Binary Audio Stream Data]</pre>
+        </div>
+      </section>
+
+      <!-- Radio / Recommendations -->
+      <section id="radio" class="endpoint-block">
+        <div class="endpoint-header">
+          <div class="endpoint-route">
+            <span class="endpoint-badge get">GET</span>
+            <span class="endpoint-path">/api/radio/:videoId</span>
+          </div>
+          <a href="/?query=3_g2un5M350&mode=radio" class="try-link">Try in Playground →</a>
+        </div>
+        <div class="endpoint-desc">
+          Generates an automated YouTube Music radio queue based on a seed song, returning recommended continuous
+          tracks.
+        </div>
+
+        <div class="table-container">
+          <table class="param-table">
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Type</th>
+                <th>In</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="param-name">videoId</span></td>
+                <td><span class="param-type">string</span></td>
+                <td>path</td>
+                <td><span class="param-required">Required</span></td>
+                <td>The 11-character seed song video ID.</td>
+              </tr>
+              <tr>
+                <td><span class="param-name">limit</span></td>
+                <td><span class="param-type">integer</span></td>
+                <td>query</td>
+                <td><span class="param-optional">Optional</span></td>
+                <td>Maximum recommended tracks to return. Default: <code>25</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="code-box">
+          <div class="code-box-header">
+            <span style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">Sample
+              Response Payload</span>
+            <button class="copy-btn"
+              onclick="copySnippet('curl http://localhost:3000/api/radio/3_g2un5M350?limit=2')">Copy</button>
+          </div>
+          <pre class="code-content">{
+  "seedVideoId": "3_g2un5M350",
+  "total": 25,
+  "tracks": [
+    {
+      "id": "qPRNIHxLhmc",
+      "title": "I Feel It Coming",
+      "artist": "The Weeknd, Daft Punk",
+      "duration": 269,
+      "durationText": "4:29",
+      "thumbnail": "https://lh3.googleusercontent.com/...",
+      "streamUrl": "/api/stream/qPRNIHxLhmc"
+    }
+  ]
+}</pre>
+        </div>
+      </section>
+
+      <!-- Playlists -->
+      <section id="playlists" class="endpoint-block">
+        <div class="endpoint-header">
+          <div class="endpoint-route">
+            <span class="endpoint-badge get">GET</span>
+            <span class="endpoint-path">/api/playlists/:playlistId</span>
+          </div>
+        </div>
+        <div class="endpoint-desc">
+          Fetches full playlist metadata, curator name, cover art, and ordered tracks.
+        </div>
+        <div class="table-container">
+          <table class="param-table">
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Type</th>
+                <th>In</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="param-name">playlistId</span></td>
+                <td><span class="param-type">string</span></td>
+                <td>path</td>
+                <td><span class="param-required">Required</span></td>
+                <td>Playlist ID (e.g. <code>RDCLAK5uy_k...</code> or standard YouTube playlist ID).</td>
+              </tr>
+              <tr>
+                <td><span class="param-name">limit</span></td>
+                <td><span class="param-type">integer</span></td>
+                <td>query</td>
+                <td><span class="param-optional">Optional</span></td>
+                <td>Maximum tracks to retrieve. Default: <code>100</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Albums -->
+      <section id="albums" class="endpoint-block">
+        <div class="endpoint-header">
+          <div class="endpoint-route">
+            <span class="endpoint-badge get">GET</span>
+            <span class="endpoint-path">/api/albums/:albumId</span>
+          </div>
+        </div>
+        <div class="endpoint-desc">
+          Retrieves album details including album title, release year, artist, high-res artwork, and complete tracklist.
+        </div>
+      </section>
+
+      <!-- Artists -->
+      <section id="artists" class="endpoint-block">
+        <div class="endpoint-header">
+          <div class="endpoint-route">
+            <span class="endpoint-badge get">GET</span>
+            <span class="endpoint-path">/api/artists/:artistId</span>
+          </div>
+        </div>
+        <div class="endpoint-desc">
+          Retrieves artist details, biographical summary, banner/avatar images, and top 10 songs.
+        </div>
+      </section>
+
+      <!-- Authentication -->
+      <section id="auth-overview" class="doc-section">
+        <h2>Authentication (User Account)</h2>
+        <p>
+          Searching and audio streaming are 100% public and do not require authentication. For user account actions
+          (Liked Songs, History, Like/Unlike), send your session cookie in the <code>x-yt-cookie</code> request header.
+        </p>
+
+        <div class="code-box">
+          <div class="code-box-header">
+            <span style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">Sample
+              Authenticated Request</span>
+            <button class="copy-btn"
+              onclick="copySnippet('curl -H &quot;x-yt-cookie: SAPISID=your_sapisid_token; ...&quot; http://localhost:3000/api/account/liked')">Copy
+              cURL</button>
+          </div>
+          <pre class="code-content">curl -X GET "http://localhost:3000/api/account/liked" \
+  -H "x-yt-cookie: SAPISID=YOUR_SAPISID_COOKIE_HERE; __Secure-3PAPISID=...;"</pre>
+        </div>
+      </section>
+
+      <!-- Account Endpoints -->
+      <section id="account-liked" class="endpoint-block">
+        <div class="endpoint-header">
+          <div class="endpoint-route">
+            <span class="endpoint-badge get">GET</span>
+            <span class="endpoint-path">/api/account/liked</span>
+          </div>
+        </div>
+        <div class="endpoint-desc">
+          Returns the authenticated user's Liked Music playlist (requires <code>x-yt-cookie</code> header).
+        </div>
+      </section>
+
+      <section id="account-history" class="endpoint-block">
+        <div class="endpoint-header">
+          <div class="endpoint-route">
+            <span class="endpoint-badge get">GET</span>
+            <span class="endpoint-path">/api/account/history</span>
+          </div>
+        </div>
+        <div class="endpoint-desc">
+          Returns the authenticated user's recent listening history (requires <code>x-yt-cookie</code> header).
+        </div>
+      </section>
+
+      <section id="account-like" class="endpoint-block">
+        <div class="endpoint-header">
+          <div class="endpoint-route">
+            <span class="endpoint-badge post">POST</span>
+            <span class="endpoint-path">/api/account/like/:videoId</span>
+          </div>
+        </div>
+        <div class="endpoint-desc">
+          Likes a track on the authenticated YouTube Music account. Use <code>DELETE /api/account/like/:videoId</code>
+          to remove the like.
+        </div>
+      </section>
+
+      <!-- Status Codes -->
+      <section id="status-codes" class="doc-section">
+        <h2>HTTP Status Codes</h2>
+        <div class="table-container">
+          <table class="param-table">
+            <thead>
+              <tr>
+                <th>Status Code</th>
+                <th>Meaning</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code style="color: var(--success);">200 OK</code></td>
+                <td>Success</td>
+                <td>Standard success response for search, metadata, and full audio streams.</td>
+              </tr>
+              <tr>
+                <td><code style="color: var(--success);">206 Partial Content</code></td>
+                <td>Range Success</td>
+                <td>Returned by <code>/api/stream/:id</code> when a client provides a Range header (seeking/buffering).
+                </td>
+              </tr>
+              <tr>
+                <td><code style="color: #fbbf24;">400 Bad Request</code></td>
+                <td>Invalid Request</td>
+                <td>Missing required parameters (e.g. <code>q</code> search parameter).</td>
+              </tr>
+              <tr>
+                <td><code style="color: #f87171;">404 Not Found</code></td>
+                <td>Not Found</td>
+                <td>Track or playlist does not exist, or video is deleted/unavailable on YouTube.</td>
+              </tr>
+              <tr>
+                <td><code style="color: #ef4444;">500 Server Error</code></td>
+                <td>Internal Error</td>
+                <td>Unexpected server error or unhandled upstream failure.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Footer with Copyright and GitHub link -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-copy">
+        <p>Copyright &copy; 2026 <strong>Arghadeep Pakhira</strong>. All rights reserved.</p>
+        <p style="font-size: 13px; margin-top: 4px; color: var(--text-muted);">
+          High-performance YouTube Music Innertube REST API with Range audio streaming proxy.
+        </p>
+      </div>
+
+      <div class="footer-links">
+        <a href="/" class="footer-link">API Playground</a>
+        <a href="/docs" class="footer-link">Documentation</a>
+        <a href="/about" class="footer-link">About</a>
+        <a href="/terms" class="footer-link">Terms & Conditions</a>
+        <a href="/health" target="_blank" class="footer-link">Status</a>
+        <a href="https://github.com/Argha2004/YT-Music-API" target="_blank" class="footer-link">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function copySnippet(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Copied to clipboard!');
+      });
+    }
+
+    // Highlight active link in sidebar on scroll
+    window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll('section[id]');
+      const scrollPos = window.scrollY + 120;
+
+      sections.forEach(sec => {
+        const top = sec.offsetTop;
+        const height = sec.offsetHeight;
+        const id = sec.getAttribute('id');
+        if (scrollPos >= top && scrollPos < top + height) {
+          document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + id) {
+              link.classList.add('active');
+            }
+          });
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
