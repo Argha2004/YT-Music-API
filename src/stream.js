@@ -1,4 +1,4 @@
-﻿import { DEFAULT_USER_AGENT } from './config.js';
+import { DEFAULT_USER_AGENT } from './config.js';
 import { Readable } from 'node:stream';
 import { Innertube, ClientType } from 'youtubei.js';
 
