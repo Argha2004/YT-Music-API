@@ -4,8 +4,12 @@ import fs from 'node:fs';
 import { URL } from 'node:url';
 import * as innertube from './innertube.js';
 import { proxyAudioStream } from './stream.js';
+import { indexHtml, docsHtml, aboutHtml, termsHtml } from './pages.js';
 
 function sendJson(res, statusCode, data) {
+  if (res.headersSent) {
+    return res.end();
+  }
   res.writeHead(statusCode, {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -13,6 +17,18 @@ function sendJson(res, statusCode, data) {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-yt-cookie, Range',
   });
   res.end(JSON.stringify(data, null, 2));
+}
+
+function sendHtml(res, html) {
+  if (res.headersSent) {
+    return res.end(html);
+  }
+  res.writeHead(200, {
+    'Content-Type': 'text/html; charset=utf-8',
+    'Content-Length': Buffer.byteLength(html, 'utf8'),
+    'Access-Control-Allow-Origin': '*',
+  });
+  res.end(html);
 }
 
 function getCookieFromReq(req) {
@@ -52,25 +68,21 @@ export async function handleRequest(req, res) {
       });
     }
 
-    // 2. Interactive Playground UI (/), Dedicated Detailed Docs (/docs), and About Page (/about)
+    // 2. Interactive Playground UI (/), Dedicated Detailed Docs (/docs), About (/about), Terms (/terms)
     if (pathname === '/') {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      return res.end(renderPlaygroundPage());
+      return sendHtml(res, indexHtml);
     }
 
     if (pathname === '/docs') {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      return res.end(renderDocsPage());
+      return sendHtml(res, docsHtml);
     }
 
     if (pathname === '/about') {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      return res.end(renderAboutPage());
+      return sendHtml(res, aboutHtml);
     }
 
     if (pathname === '/terms') {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      return res.end(renderTermsPage());
+      return sendHtml(res, termsHtml);
     }
 
     // 3. Search API: /api/search?q=query&filter=songs|albums|artists|playlists&limit=20
@@ -163,35 +175,4 @@ export async function handleRequest(req, res) {
       error: error.message || 'Internal server error',
     });
   }
-}
-
-function readHtmlFile(filename) {
-  try {
-    const filePath = fileURLToPath(new URL(`./${filename}`, import.meta.url));
-    if (fs.existsSync(filePath)) return fs.readFileSync(filePath, 'utf8');
-  } catch {}
-
-  const cwdPath = path.join(process.cwd(), 'src', filename);
-  if (fs.existsSync(cwdPath)) return fs.readFileSync(cwdPath, 'utf8');
-
-  const rootPath = path.join(process.cwd(), filename);
-  if (fs.existsSync(rootPath)) return fs.readFileSync(rootPath, 'utf8');
-
-  throw new Error(`HTML template ${filename} not found`);
-}
-
-function renderDocsPage() {
-  return readHtmlFile('docs.html');
-}
-
-function renderAboutPage() {
-  return readHtmlFile('about.html');
-}
-
-function renderTermsPage() {
-  return readHtmlFile('terms.html');
-}
-
-function renderPlaygroundPage() {
-  return readHtmlFile('index.html');
 }
