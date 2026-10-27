@@ -134,7 +134,7 @@ export async function handleRequest(req, res) {
     const streamMatch = pathname.match(/^\/api\/stream\/([\w-]{11})$/);
     if (streamMatch) {
       const videoId = streamMatch[1];
-      return proxyAudioStream(req, res, videoId);
+      return proxyAudioStream(req, res, videoId, cookie);
     }
 
     // 9. Account: Liked Songs

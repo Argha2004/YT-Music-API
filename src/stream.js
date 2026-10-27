@@ -1,32 +1,55 @@
-import { DEFAULT_USER_AGENT } from './config.js';
 import { Readable } from 'node:stream';
 import { Innertube, ClientType } from 'youtubei.js';
 
 // In-memory cache for resolved audio stream URLs
-// videoId -> { url, httpHeaders, mimeType, contentLength, expiresAt }
+// videoId -> { url, httpHeaders, mimeType, contentLength, expiresAt, client }
 const streamCache = new Map();
 
-// Singleton Innertube client instance (iOS client profile provides direct, unthrottled audio URLs with no cipher)
-let innertubePromise = null;
+// Client instances cache
+const clientCache = new Map();
 
-async function getInnertube() {
-  if (!innertubePromise) {
-    innertubePromise = Innertube.create({
-      client_type: ClientType.IOS,
+// Multi-client fallback chain
+// If one client profile is blocked or restricted by YouTube on datacenter IPs (e.g. AWS/Vercel),
+// the resolver automatically falls back to the next client candidate.
+const CLIENT_CANDIDATES = [
+  {
+    type: ClientType.IOS,
+    name: 'iOS',
+    userAgent: 'com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X; en_US)',
+  },
+  {
+    type: ClientType.ANDROID_VR,
+    name: 'Android VR',
+    userAgent: 'Mozilla/5.0 (Linux; Android 12; Quest 2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36',
+  },
+  {
+    type: ClientType.VISIONOS,
+    name: 'visionOS',
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
+  },
+];
+
+async function getInnertubeClient(clientType, cookie = '') {
+  const cacheKey = `${clientType}_${cookie ? 'auth' : 'anon'}`;
+  if (!clientCache.has(cacheKey)) {
+    const promise = Innertube.create({
+      client_type: clientType,
       retrieve_player: false,
+      cookie: cookie || process.env.YT_COOKIE || undefined,
     }).catch((err) => {
-      innertubePromise = null;
+      clientCache.delete(cacheKey);
       throw err;
     });
+    clientCache.set(cacheKey, promise);
   }
-  return innertubePromise;
+  return clientCache.get(cacheKey);
 }
 
 /**
- * Resolve direct audio stream URL and necessary request headers using pure JavaScript (Innertube iOS client).
- * Runs natively in Node.js and Serverless runtimes (Vercel, AWS Lambda) without requiring external binaries like yt-dlp.
+ * Resolve direct audio stream URL and headers with automatic multi-client fallback.
+ * Works natively in Node.js and Serverless runtimes (Vercel, AWS Lambda) without yt-dlp.
  */
-export async function resolveAudioFormat(videoId, forceFresh = false) {
+export async function resolveAudioFormat(videoId, forceFresh = false, cookie = '') {
   if (!forceFresh) {
     const cached = streamCache.get(videoId);
     if (cached && Date.now() < cached.expiresAt) {
@@ -34,77 +57,88 @@ export async function resolveAudioFormat(videoId, forceFresh = false) {
     }
   }
 
-  try {
-    const yt = await getInnertube();
-    const info = await yt.getBasicInfo(videoId);
+  const diagnostics = [];
 
-    const formats = info.streaming_data?.adaptive_formats || [];
-    const audioFormats = formats.filter((f) => f.has_audio && !f.has_video);
+  for (const candidate of CLIENT_CANDIDATES) {
+    try {
+      const yt = await getInnertubeClient(candidate.type, cookie);
+      const info = await yt.getBasicInfo(videoId);
 
-    if (audioFormats.length === 0) {
-      const err = new Error(`No valid audio stream was found for track ${videoId}.`);
-      err.statusCode = 404;
-      throw err;
+      const playability = info.playability_status?.status;
+      if (playability && playability !== 'OK') {
+        diagnostics.push(`${candidate.name}: ${playability} (${info.playability_status?.reason || 'restricted'})`);
+        continue;
+      }
+
+      const adaptive = info.streaming_data?.adaptive_formats || [];
+      const progressive = info.streaming_data?.formats || [];
+
+      // 1. Audio-only adaptive formats with direct stream URL
+      let audios = adaptive.filter((f) => f.has_audio && !f.has_video && f.url);
+
+      // 2. Fallback to progressive muxed formats with direct stream URL
+      if (audios.length === 0) {
+        audios = progressive.filter((f) => f.has_audio && f.url);
+      }
+
+      if (audios.length === 0) {
+        diagnostics.push(`${candidate.name}: 0 direct audio URLs`);
+        continue;
+      }
+
+      // Sort by bitrate descending for highest audio fidelity
+      audios.sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
+      const bestAudio = audios[0];
+      const streamUrl = bestAudio.url;
+
+      const mimeType = bestAudio.mime_type?.split(';')[0] || 'audio/mp4';
+
+      let expiresAt = Date.now() + 4 * 60 * 60 * 1000;
+      const expireMatch = streamUrl.match(/[?&]expire=(\d+)/);
+      if (expireMatch) {
+        const sec = Number(expireMatch[1]);
+        if (sec > 0) expiresAt = sec * 1000 - 10 * 60 * 1000;
+      }
+
+      const entry = {
+        videoId,
+        client: candidate.name,
+        url: streamUrl,
+        httpHeaders: {
+          'User-Agent': candidate.userAgent,
+          Referer: 'https://music.youtube.com/',
+        },
+        mimeType,
+        bitrate: bestAudio.bitrate,
+        contentLength: bestAudio.content_length,
+        expiresAt,
+      };
+
+      streamCache.set(videoId, entry);
+      return entry;
+    } catch (err) {
+      diagnostics.push(`${candidate.name}: ${err.message || 'fetch error'}`);
     }
-
-    // Sort by bitrate descending (highest audio quality, typically 128kbps AAC / m4a itag 140)
-    audioFormats.sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
-    const bestAudio = audioFormats[0];
-
-    const streamUrl = bestAudio.url;
-    if (!streamUrl) {
-      const err = new Error(`Audio stream URL could not be resolved for track ${videoId}.`);
-      err.statusCode = 404;
-      throw err;
-    }
-
-    const mimeType = bestAudio.mime_type?.split(';')[0] || 'audio/mp4';
-
-    // Parse expiration from URL parameter (default 4 hours)
-    let expiresAt = Date.now() + 4 * 60 * 60 * 1000;
-    const expireMatch = streamUrl.match(/[?&]expire=(\d+)/);
-    if (expireMatch) {
-      const sec = Number(expireMatch[1]);
-      if (sec > 0) expiresAt = sec * 1000 - 10 * 60 * 1000;
-    }
-
-    const entry = {
-      videoId,
-      url: streamUrl,
-      httpHeaders: {
-        'User-Agent':
-          'com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X; en_US)',
-        Referer: 'https://music.youtube.com/',
-      },
-      mimeType,
-      bitrate: bestAudio.bitrate,
-      contentLength: bestAudio.content_length,
-      expiresAt,
-    };
-
-    streamCache.set(videoId, entry);
-    return entry;
-  } catch (err) {
-    const message = err.message || '';
-    if (/unavailable|not available|private video|copyright/i.test(message)) {
-      const notFound = new Error(`Track ${videoId} is unavailable, private, or does not exist on YouTube Music.`);
-      notFound.statusCode = 404;
-      throw notFound;
-    }
-    throw err;
   }
+
+  const err = new Error(
+    `No valid audio stream was found for track ${videoId}. Diagnostics: [${diagnostics.join('; ')}]`
+  );
+  err.statusCode = 404;
+  err.diagnostics = diagnostics;
+  throw err;
 }
 
 /**
  * Proxy audio stream with full HTTP Range (206 Partial Content) support.
  * Also supports 302 direct redirect if `?redirect=true` or `?direct=true` is requested.
  */
-export async function proxyAudioStream(req, res, videoId) {
+export async function proxyAudioStream(req, res, videoId, cookie = '') {
   try {
     const urlObj = new URL(req.url, 'http://localhost');
     const shouldRedirect = urlObj.searchParams.get('redirect') === 'true' || urlObj.searchParams.get('direct') === 'true';
 
-    let format = await resolveAudioFormat(videoId);
+    let format = await resolveAudioFormat(videoId, false, cookie);
 
     // If client requested a direct URL / redirect, return 302 Found
     if (shouldRedirect) {
@@ -130,7 +164,7 @@ export async function proxyAudioStream(req, res, videoId) {
     // If expired or CDN returns 403, retry with fresh format
     if (upstreamRes.status === 403) {
       streamCache.delete(videoId);
-      format = await resolveAudioFormat(videoId, true);
+      format = await resolveAudioFormat(videoId, true, cookie);
       upstreamHeaders = {
         ...format.httpHeaders,
       };
@@ -169,7 +203,7 @@ export async function proxyAudioStream(req, res, videoId) {
       nodeStream.on('error', () => {
         if (!res.destroyed) res.destroy();
       });
-      req.on('close', () => {
+      if (typeof req.on === 'function') req.on('close', () => {
         nodeStream.destroy();
       });
       nodeStream.pipe(res);
@@ -184,7 +218,11 @@ export async function proxyAudioStream(req, res, videoId) {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
       });
-      res.end(JSON.stringify({ error: error.message, videoId }));
+      res.end(JSON.stringify({
+        error: error.message,
+        videoId,
+        diagnostics: error.diagnostics || undefined,
+      }));
     }
   }
 }
