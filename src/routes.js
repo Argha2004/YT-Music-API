@@ -1,3 +1,5 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import { URL } from 'node:url';
 import * as innertube from './innertube.js';
@@ -29,19 +31,14 @@ export async function handleRequest(req, res) {
     return;
   }
 
-  // On Vercel rewrites, the original requested path is passed in x-matched-path
-  const matchedPath = req.headers['x-matched-path'];
-  const searchIndex = req.url.indexOf('?');
-  const searchParams = searchIndex !== -1 ? req.url.slice(searchIndex) : '';
-  const effectiveUrl = matchedPath
-    ? (matchedPath.includes('?') ? matchedPath : `${matchedPath}${searchParams}`)
-    : req.url;
-
   const parsedUrl = new URL(
-    effectiveUrl,
+    req.url,
     `http://${req.headers['x-forwarded-host'] || req.headers.host || 'localhost'}`
   );
-  const pathname = parsedUrl.pathname;
+  let rawPath = parsedUrl.searchParams.get('__path') || req.headers['x-matched-path'] || parsedUrl.pathname;
+  if (!rawPath.startsWith('/')) rawPath = '/' + rawPath;
+  parsedUrl.searchParams.delete('__path');
+  const pathname = rawPath;
   const cookie = getCookieFromReq(req);
 
   try {
@@ -168,22 +165,33 @@ export async function handleRequest(req, res) {
   }
 }
 
+function readHtmlFile(filename) {
+  try {
+    const filePath = fileURLToPath(new URL(`./${filename}`, import.meta.url));
+    if (fs.existsSync(filePath)) return fs.readFileSync(filePath, 'utf8');
+  } catch {}
+
+  const cwdPath = path.join(process.cwd(), 'src', filename);
+  if (fs.existsSync(cwdPath)) return fs.readFileSync(cwdPath, 'utf8');
+
+  const rootPath = path.join(process.cwd(), filename);
+  if (fs.existsSync(rootPath)) return fs.readFileSync(rootPath, 'utf8');
+
+  throw new Error(`HTML template ${filename} not found`);
+}
+
 function renderDocsPage() {
-  const docsHtmlPath = new URL('./docs.html', import.meta.url);
-  return fs.readFileSync(docsHtmlPath, 'utf8');
+  return readHtmlFile('docs.html');
 }
 
 function renderAboutPage() {
-  const aboutHtmlPath = new URL('./about.html', import.meta.url);
-  return fs.readFileSync(aboutHtmlPath, 'utf8');
+  return readHtmlFile('about.html');
 }
 
 function renderTermsPage() {
-  const termsHtmlPath = new URL('./terms.html', import.meta.url);
-  return fs.readFileSync(termsHtmlPath, 'utf8');
+  return readHtmlFile('terms.html');
 }
 
 function renderPlaygroundPage() {
-  const indexHtmlPath = new URL('./index.html', import.meta.url);
-  return fs.readFileSync(indexHtmlPath, 'utf8');
+  return readHtmlFile('index.html');
 }
