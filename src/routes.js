@@ -29,7 +29,18 @@ export async function handleRequest(req, res) {
     return;
   }
 
-  const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  // On Vercel rewrites, the original requested path is passed in x-matched-path
+  const matchedPath = req.headers['x-matched-path'];
+  const searchIndex = req.url.indexOf('?');
+  const searchParams = searchIndex !== -1 ? req.url.slice(searchIndex) : '';
+  const effectiveUrl = matchedPath
+    ? (matchedPath.includes('?') ? matchedPath : `${matchedPath}${searchParams}`)
+    : req.url;
+
+  const parsedUrl = new URL(
+    effectiveUrl,
+    `http://${req.headers['x-forwarded-host'] || req.headers.host || 'localhost'}`
+  );
   const pathname = parsedUrl.pathname;
   const cookie = getCookieFromReq(req);
 
