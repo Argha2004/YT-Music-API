@@ -12,6 +12,11 @@
   <a href="https://github.com/Argha2004/YT-Music-API"><img src="https://img.shields.io/badge/Streaming-HTTP%20206%20Range-orange.svg" alt="Streaming Support"></a>
 </p>
 
+
+<p align="center">
+  <img src="public/Home.png" alt="YT Music API Home screen" width="900">
+</p>
+
 ---
 
 ## 🌟 Highlights
