@@ -1,3 +1,15 @@
+export function sanitizeCookie(cookieStr) {
+  if (!cookieStr) return '';
+  return cookieStr
+    .split(';')
+    .map((p) => p.trim())
+    .filter((p) => {
+      const k = p.split('=')[0];
+      return k && !k.includes('SIDTS');
+    })
+    .join('; ');
+}
+
 import { Readable } from 'node:stream';
 import { Innertube, ClientType } from 'youtubei.js';
 
@@ -30,12 +42,13 @@ const CLIENT_CANDIDATES = [
 ];
 
 async function getInnertubeClient(clientType, cookie = '') {
-  const cacheKey = `${clientType}_${cookie ? 'auth' : 'anon'}`;
+  const cleanCookie = sanitizeCookie(cookie || process.env.YT_COOKIE || '');
+  const cacheKey = `${clientType}_${cleanCookie ? 'auth' : 'anon'}`;
   if (!clientCache.has(cacheKey)) {
     const promise = Innertube.create({
       client_type: clientType,
       retrieve_player: false,
-      cookie: cookie || process.env.YT_COOKIE || undefined,
+      cookie: cleanCookie || undefined,
     }).catch((err) => {
       clientCache.delete(cacheKey);
       throw err;
