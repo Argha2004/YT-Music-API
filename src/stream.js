@@ -1,52 +1,30 @@
-import { DEFAULT_USER_AGENT } from './config.js';
-import { execFile, spawn } from 'node:child_process';
-import { promisify } from 'node:util';
+﻿import { DEFAULT_USER_AGENT } from './config.js';
 import { Readable } from 'node:stream';
-
-const execFileAsync = promisify(execFile);
+import { Innertube, ClientType } from 'youtubei.js';
 
 // In-memory cache for resolved audio stream URLs
-// videoId -> { url, httpHeaders, mimeType, expiresAt }
+// videoId -> { url, httpHeaders, mimeType, contentLength, expiresAt }
 const streamCache = new Map();
 
-/**
- * Fallback: pipe raw audio bytes directly from yt-dlp child process.
- * Guarantees streaming succeeds even if direct GoogleVideo CDN fetch is rejected.
- */
-function streamViaProcess(req, res, videoId, mimeType = 'audio/mp4') {
-  if (res.headersSent) return;
+// Singleton Innertube client instance (iOS client profile provides direct, unthrottled audio URLs with no cipher)
+let innertubePromise = null;
 
-  res.writeHead(200, {
-    'Content-Type': mimeType,
-    'Transfer-Encoding': 'chunked',
-    'Cache-Control': 'no-cache',
-    'Accept-Ranges': 'none',
-  });
-
-  const proc = spawn('yt-dlp', [
-    '--no-warnings',
-    '--no-playlist',
-    '--extractor-args', 'youtube:player_client=android',
-    '-f', 'bestaudio/best/18',
-    '-o', '-',
-    `https://music.youtube.com/watch?v=${videoId}`,
-  ]);
-
-  proc.stdout.pipe(res);
-
-  proc.on('error', (err) => {
-    console.error(`[yt-dlp spawn error] ${videoId}:`, err.message);
-    if (!res.destroyed) res.destroy();
-  });
-
-  req.on('close', () => {
-    if (!proc.killed) proc.kill();
-  });
+async function getInnertube() {
+  if (!innertubePromise) {
+    innertubePromise = Innertube.create({
+      client_type: ClientType.IOS,
+      retrieve_player: false,
+    }).catch((err) => {
+      innertubePromise = null;
+      throw err;
+    });
+  }
+  return innertubePromise;
 }
 
 /**
- * Resolve direct audio stream URL and necessary request headers.
- * Uses yt-dlp with STRICTLY the android player client which bypasses YouTube's 403 BotGuard/PO-Token blocks.
+ * Resolve direct audio stream URL and necessary request headers using pure JavaScript (Innertube iOS client).
+ * Runs natively in Node.js and Serverless runtimes (Vercel, AWS Lambda) without requiring external binaries like yt-dlp.
  */
 export async function resolveAudioFormat(videoId, forceFresh = false) {
   if (!forceFresh) {
@@ -57,36 +35,33 @@ export async function resolveAudioFormat(videoId, forceFresh = false) {
   }
 
   try {
-    const { stdout } = await execFileAsync('yt-dlp', [
-      '--no-warnings',
-      '--no-playlist',
-      '--extractor-args', 'youtube:player_client=android',
-      '-j',
-      '-f', 'bestaudio/best/18',
-      `https://music.youtube.com/watch?v=${videoId}`,
-    ]);
+    const yt = await getInnertube();
+    const info = await yt.getBasicInfo(videoId);
 
-    const info = JSON.parse(stdout);
-    const streamUrl = info.url;
+    const formats = info.streaming_data?.adaptive_formats || [];
+    const audioFormats = formats.filter((f) => f.has_audio && !f.has_video);
 
-    if (!streamUrl) {
-      const err = new Error('No valid audio stream URL was found for this track.');
+    if (audioFormats.length === 0) {
+      const err = new Error(`No valid audio stream was found for track ${videoId}.`);
       err.statusCode = 404;
       throw err;
     }
 
-    // Determine mimeType
-    let mimeType = 'audio/mp4';
-    if (info.ext === 'mp4' || info.ext === 'm4a') {
-      mimeType = 'audio/mp4';
-    } else if (info.ext === 'webm') {
-      mimeType = 'audio/webm';
-    } else if (info.ext === 'mp3') {
-      mimeType = 'audio/mpeg';
+    // Sort by bitrate descending (highest audio quality, typically 128kbps AAC / m4a itag 140)
+    audioFormats.sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
+    const bestAudio = audioFormats[0];
+
+    const streamUrl = bestAudio.url;
+    if (!streamUrl) {
+      const err = new Error(`Audio stream URL could not be resolved for track ${videoId}.`);
+      err.statusCode = 404;
+      throw err;
     }
 
-    // Parse expiration
-    let expiresAt = Date.now() + 4 * 60 * 60 * 1000; // default 4 hours
+    const mimeType = bestAudio.mime_type?.split(';')[0] || 'audio/mp4';
+
+    // Parse expiration from URL parameter (default 4 hours)
+    let expiresAt = Date.now() + 4 * 60 * 60 * 1000;
     const expireMatch = streamUrl.match(/[?&]expire=(\d+)/);
     if (expireMatch) {
       const sec = Number(expireMatch[1]);
@@ -96,8 +71,14 @@ export async function resolveAudioFormat(videoId, forceFresh = false) {
     const entry = {
       videoId,
       url: streamUrl,
-      httpHeaders: info.http_headers || { 'User-Agent': DEFAULT_USER_AGENT },
+      httpHeaders: {
+        'User-Agent':
+          'com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X; en_US)',
+        Referer: 'https://music.youtube.com/',
+      },
       mimeType,
+      bitrate: bestAudio.bitrate,
+      contentLength: bestAudio.content_length,
       expiresAt,
     };
 
@@ -116,14 +97,25 @@ export async function resolveAudioFormat(videoId, forceFresh = false) {
 
 /**
  * Proxy audio stream with full HTTP Range (206 Partial Content) support.
- * The server pipes stream chunks from googlevideo to the client with authentic headers,
- * falling back to direct process streaming if the CDN refuses the connection.
+ * Also supports 302 direct redirect if `?redirect=true` or `?direct=true` is requested.
  */
 export async function proxyAudioStream(req, res, videoId) {
   try {
-    let format = await resolveAudioFormat(videoId);
-    const rangeHeader = req.headers['range'];
+    const urlObj = new URL(req.url, 'http://localhost');
+    const shouldRedirect = urlObj.searchParams.get('redirect') === 'true' || urlObj.searchParams.get('direct') === 'true';
 
+    let format = await resolveAudioFormat(videoId);
+
+    // If client requested a direct URL / redirect, return 302 Found
+    if (shouldRedirect) {
+      res.writeHead(302, {
+        Location: format.url,
+        'Access-Control-Allow-Origin': '*',
+      });
+      return res.end();
+    }
+
+    const rangeHeader = req.headers['range'];
     let upstreamHeaders = {
       ...format.httpHeaders,
     };
@@ -135,36 +127,32 @@ export async function proxyAudioStream(req, res, videoId) {
       headers: upstreamHeaders,
     });
 
-    // If upstream returns 403 (expired or CDN restriction), retry fresh extraction
+    // If expired or CDN returns 403, retry with fresh format
     if (upstreamRes.status === 403) {
       streamCache.delete(videoId);
-      try {
-        format = await resolveAudioFormat(videoId, true);
-        upstreamHeaders = {
-          ...format.httpHeaders,
-        };
-        if (rangeHeader) {
-          upstreamHeaders['Range'] = rangeHeader;
-        }
-        upstreamRes = await fetch(format.url, {
-          headers: upstreamHeaders,
-        });
-      } catch {
-        // Fall back to direct process streaming if resolution fails
-        return streamViaProcess(req, res, videoId, format.mimeType);
+      format = await resolveAudioFormat(videoId, true);
+      upstreamHeaders = {
+        ...format.httpHeaders,
+      };
+      if (rangeHeader) {
+        upstreamHeaders['Range'] = rangeHeader;
       }
+      upstreamRes = await fetch(format.url, {
+        headers: upstreamHeaders,
+      });
     }
 
-    // If still 403 or error, fall back to direct process stream
-    if (upstreamRes.status === 403 || !upstreamRes.ok && upstreamRes.status !== 206) {
-      console.warn(`[Stream] Upstream CDN returned ${upstreamRes.status}. Falling back to direct process stream for ${videoId}...`);
-      return streamViaProcess(req, res, videoId, format.mimeType);
+    if (!upstreamRes.ok && upstreamRes.status !== 206) {
+      throw new Error(`Upstream audio fetch failed with status ${upstreamRes.status}`);
     }
 
     const responseHeaders = {
       'Content-Type': upstreamRes.headers.get('content-type') || format.mimeType,
       'Accept-Ranges': 'bytes',
-      'Cache-Control': 'no-cache',
+      'Cache-Control': 'public, max-age=14400',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'Range, Content-Type, Authorization',
+      'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges',
     };
 
     const contentRange = upstreamRes.headers.get('content-range');
@@ -175,7 +163,7 @@ export async function proxyAudioStream(req, res, videoId) {
 
     res.writeHead(upstreamRes.status, responseHeaders);
 
-    // Pipe audio stream to client safely handling disconnects/pauses
+    // Pipe audio stream to client safely handling disconnects
     if (upstreamRes.body) {
       const nodeStream = Readable.fromWeb(upstreamRes.body);
       nodeStream.on('error', () => {
@@ -192,7 +180,10 @@ export async function proxyAudioStream(req, res, videoId) {
     const status = error.statusCode || 500;
     console.error(`[Stream Error] ${videoId}:`, error.message);
     if (!res.headersSent) {
-      res.writeHead(status, { 'Content-Type': 'application/json' });
+      res.writeHead(status, {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      });
       res.end(JSON.stringify({ error: error.message, videoId }));
     }
   }

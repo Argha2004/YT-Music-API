@@ -1,0 +1,9 @@
+﻿services:
+  - type: web
+    name: ytmusic-api
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
