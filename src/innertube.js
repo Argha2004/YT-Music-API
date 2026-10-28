@@ -58,15 +58,14 @@ function columnRuns(renderer, idx) {
   return renderer?.flexColumns?.[idx]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs || [];
 }
 
-/** Parse song and video items from responsive list items */
+/** Parse song, video, artist, album, and playlist items from responsive list items */
 export function parseResponsiveItem(renderer) {
   const titleRuns = columnRuns(renderer, 0);
+  const title = titleRuns.map((r) => r.text).join('').trim();
   const watch =
     titleRuns[0]?.navigationEndpoint?.watchEndpoint ||
     renderer?.navigationEndpoint?.watchEndpoint;
   const videoId = renderer?.playlistItemData?.videoId || watch?.videoId;
-
-  if (!videoId || !/^[\w-]{11}$/.test(videoId)) return null;
 
   const subtitleRuns = [
     ...(renderer.flexColumns || []).slice(1).flatMap((_, i) => columnRuns(renderer, i + 1)),
@@ -74,6 +73,63 @@ export function parseResponsiveItem(renderer) {
       (c) => c.musicResponsiveListItemFixedColumnRenderer?.text?.runs || []
     ),
   ];
+
+  const thumb = extractThumbnail(renderer.thumbnail);
+
+  if (!videoId || !/^[\w-]{11}$/.test(videoId)) {
+    const browse =
+      renderer?.navigationEndpoint?.browseEndpoint ||
+      titleRuns[0]?.navigationEndpoint?.browseEndpoint;
+    const browseId = browse?.browseId;
+    const pageType =
+      browse?.browseEndpointContextSupportedConfigs?.browseEndpointContextMusicConfig?.pageType || '';
+
+    if (browseId) {
+      if (pageType.endsWith('_ARTIST') || browseId.startsWith('UC')) {
+        return {
+          id: browseId,
+          name: title,
+          title,
+          role: 'Artist',
+          thumbnail: thumb,
+          image: thumb,
+          type: 'artist',
+        };
+      }
+      if (pageType.endsWith('_PLAYLIST') || browseId.startsWith('VL') || browseId.startsWith('PL')) {
+        return {
+          id: browseId.replace(/^VL/, ''),
+          name: title,
+          title,
+          subtitle: subtitleRuns.map((r) => r.text).join(' ').trim(),
+          thumbnail: thumb,
+          image: thumb,
+          type: 'playlist',
+        };
+      }
+      if (pageType.endsWith('_ALBUM') || browseId.startsWith('MPRE')) {
+        return {
+          id: browseId,
+          name: title,
+          title,
+          artist: subtitleRuns[0]?.text || '',
+          year: subtitleRuns[1]?.text || '',
+          thumbnail: thumb,
+          image: thumb,
+          type: 'album',
+        };
+      }
+      return {
+        id: browseId,
+        name: title,
+        title,
+        thumbnail: thumb,
+        image: thumb,
+        type: 'browse',
+      };
+    }
+    return null;
+  }
 
   const artists = [];
   let album = null;
@@ -97,11 +153,9 @@ export function parseResponsiveItem(renderer) {
     }
   }
 
-  const thumb = extractThumbnail(renderer.thumbnail);
-
   return {
     id: videoId,
-    title: titleRuns.map((r) => r.text).join('').trim(),
+    title,
     artists: artists.length ? artists : [{ name: subtitleRuns[0]?.text || 'Unknown Artist', id: null }],
     artist: artists.map((a) => a.name).join(', ') || subtitleRuns[0]?.text || 'Unknown Artist',
     album: album || null,
